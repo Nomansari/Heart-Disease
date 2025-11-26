@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
@@ -15,30 +17,58 @@ def load_data():
 df = load_data()
 
 st.title("Heart Disease Prediction App")
-st.write("Using Logistic Regression on the provided dataset.")
+st.write("Using Logistic Regression and Data Visualization.")
 
 # --------------------------
-# Show Data
+# Show Raw Data
 # --------------------------
 if st.checkbox("Show raw dataset"):
     st.dataframe(df)
 
 # --------------------------
-# Train Model
+# DATA VISUALIZATION SECTION
+# --------------------------
+st.header("📊 Data Visualization")
+
+# --- Heart Disease Count Plot ---
+st.subheader("Heart Disease Count")
+fig, ax = plt.subplots()
+sns.countplot(data=df, x="target", palette="viridis", ax=ax)
+ax.set_xticklabels(["No Disease", "Disease"])
+st.pyplot(fig)
+
+# --- Feature Distribution ---
+st.subheader("Feature Distribution")
+feature = st.selectbox("Select a feature to visualize", df.columns)
+fig, ax = plt.subplots()
+sns.histplot(df[feature], kde=True, color="blue", ax=ax)
+st.pyplot(fig)
+
+# --- Correlation Heatmap ---
+st.subheader("Correlation Heatmap")
+fig, ax = plt.subplots(figsize=(10, 7))
+sns.heatmap(df.corr(), annot=False, cmap="coolwarm", ax=ax)
+st.pyplot(fig)
+
+# --- Pairplot (Optional but Heavy) ---
+if st.checkbox("Show Pairplot (Slow)"):
+    st.subheader("Pairplot")
+    fig = sns.pairplot(df, hue="target")
+    st.pyplot(fig)
+
+# --------------------------
+# MODEL TRAINING
 # --------------------------
 X = df.drop("target", axis=1)
 y = df["target"]
 
-# Train-test split
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# Model
 model = LogisticRegression(max_iter=2000)
 model.fit(X_train, y_train)
 
-# Accuracy
 y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 
@@ -46,7 +76,7 @@ st.subheader("Model Accuracy")
 st.write(f"Accuracy: **{accuracy:.2f}**")
 
 # --------------------------
-# User Input for Prediction
+# Prediction Inputs
 # --------------------------
 st.subheader("Predict Heart Disease")
 
@@ -66,19 +96,9 @@ def user_input():
     thal = st.selectbox("Thal (1=Normal, 2=Fixed defect, 3=Reversible)", [1, 2, 3])
 
     user_data = {
-        "age": age,
-        "sex": sex,
-        "cp": cp,
-        "trestbps": trestbps,
-        "chol": chol,
-        "fbs": fbs,
-        "restecg": restecg,
-        "thalach": thalach,
-        "exang": exang,
-        "oldpeak": oldpeak,
-        "slope": slope,
-        "ca": ca,
-        "thal": thal
+        "age": age, "sex": sex, "cp": cp, "trestbps": trestbps, "chol": chol,
+        "fbs": fbs, "restecg": restecg, "thalach": thalach, "exang": exang,
+        "oldpeak": oldpeak, "slope": slope, "ca": ca, "thal": thal
     }
 
     return pd.DataFrame([user_data])
