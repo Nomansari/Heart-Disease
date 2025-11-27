@@ -3,3 +3,6 @@ scikit-learn
 #pickle
 pandas
 numpy
+seaborn
+matplotlib
+
